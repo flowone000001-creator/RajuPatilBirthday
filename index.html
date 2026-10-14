@@ -275,21 +275,17 @@
       <div class="divider"></div>
 
       <p class="wish">
-        तुझ्या आयुष्यात सुख, समृद्धी आणि यशाची नेहमीच भरभराट होवो.
-        तुझी प्रत्येक इच्छा पूर्ण होवो, प्रत्येक स्वप्नाला नवी दिशा मिळो
-        आणि तुझ्या चेहऱ्यावरचं हसू असंच कायम खुलत राहो.
+        तुमच्या आयुष्यात सुख, समृद्धी आणि यशाची नेहमीच भरभराट होवो.
+        तुमची प्रत्येक इच्छा पूर्ण होवो, प्रत्येक स्वप्नाला नवी दिशा मिळो
+        आणि तुमच्या चेहऱ्यावरचं हसू असंच कायम खुलत राहो.
         <br><strong>मैत्री अशीच कायम राहो आणि आयुष्य आनंदाने बहरून जावो!</strong>
       </p>
 
       <p class="signature">
-        मनापासून शुभेच्छा आणि खूप सारा स्नेह!<br>
-        🎉 वाढदिवसाच्या खूप खूप शुभेच्छा, राजू! 🎉
+        🎉 वाढदिवसाच्या खूप खूप शुभेच्छा 🎉
       </p>
 
       <div class="actions">
-        <button id="surpriseButton" type="button" aria-expanded="false" aria-controls="surpriseMessage">
-          🎁 सरप्राइज उघड
-        </button>
         <button id="musicButton" class="secondary" type="button">
           ▶️ संगीत सुरू करा
         </button>
@@ -298,18 +294,11 @@
         </button>
       </div>
 
-      <div id="surpriseMessage" class="surprise" role="status" aria-live="polite">
-        💛 <strong>राजू, दोस्ती म्हणजे आयुष्यातली खास भेट!</strong><br>
-        तुझ्या प्रत्येक नव्या वर्षात नवीन संधी, भरपूर आनंद, उत्तम आरोग्य
-        आणि मनसोक्त हसण्याचे क्षण मिळोत. आजचा दिवस तुझ्याच नावावर!
-        <br>🎂 चल, केक कापूया आणि धमाल करूया! 🥳
-      </div>
 
-      <p id="musicStatus" class="music-note">
+      <p id="musicStatus" class="music-note" hidden>
         संगीतासाठी: या HTML फाइलसोबत <code>music.mp3</code> अपलोड करा.
       </p>
-      <p id="statusMessage" class="status" aria-live="polite"></p>
-      <p class="footer">एका खास मित्रासाठी, खास मराठमोळ्या शुभेच्छा ✨</p>
+      <p id="statusMessage" class="status" aria-live="polite" hidden></p>
 
       <!--
         Add your own licensed audio file named music.mp3 in the same repository
@@ -321,8 +310,6 @@
 
   <script>
     (() => {
-      const surpriseButton = document.getElementById('surpriseButton');
-      const surpriseMessage = document.getElementById('surpriseMessage');
       const musicButton = document.getElementById('musicButton');
       const musicStatus = document.getElementById('musicStatus');
       const celebrateButton = document.getElementById('celebrateButton');
@@ -346,18 +333,6 @@
           window.setTimeout(() => piece.remove(), 8500);
         }
       }
-
-      surpriseButton.addEventListener('click', () => {
-        const isOpen = surpriseMessage.classList.toggle('show');
-        surpriseButton.setAttribute('aria-expanded', String(isOpen));
-        surpriseButton.textContent = isOpen ? '💝 सरप्राइज बंद करा' : '🎁 सरप्राइज उघड';
-        if (isOpen) {
-          celebrate(55);
-          statusMessage.textContent = 'हे खास सरप्राइज फक्त तुझ्यासाठी, राजू!';
-        } else {
-          statusMessage.textContent = '';
-        }
-      });
 
       musicButton.addEventListener('click', async () => {
         if (birthdayMusic.paused) {
@@ -389,9 +364,22 @@
         statusMessage.textContent = '🥳 राजू, आजचा दिवस धमाल आणि आनंदाने भरलेला असो!';
       });
 
-      // A small opening burst; no external image or audio is required.
+      // Try autoplay on page open. Most mobile browsers require a user gesture;
+      // if blocked, show a clear message and keep the manual music button available.
+      async function attemptAutoplay() {
+        try {
+          birthdayMusic.volume = 0.8;
+          await birthdayMusic.play();
+          musicButton.textContent = '⏸️ संगीत थांबवा';
+          musicStatus.textContent = '🎶 संगीत सुरू आहे!';
+        } catch (error) {
+          musicStatus.textContent = 'तुमच्या ब्राउझरने आपोआप संगीत सुरू होऊ दिले नाही. संगीत सुरू करण्यासाठी बटण दाबा.';
+        }
+      }
+
       window.addEventListener('load', () => {
         window.setTimeout(() => celebrate(24), 450);
+        attemptAutoplay();
       });
     })();
   </script>
