@@ -46,6 +46,42 @@
       overflow-x: hidden;
     }
 
+    [hidden] { display: none !important; }
+
+    .welcome-screen {
+      width: min(100%, 680px);
+      min-height: 72vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      animation: cardEnter 1s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .welcome-panel {
+      width: 100%;
+      padding: clamp(28px, 7vw, 56px) clamp(20px, 6vw, 48px);
+      border: 1px solid rgba(245, 213, 139, .75);
+      border-radius: 26px;
+      background: linear-gradient(155deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
+      box-shadow: 0 20px 70px rgba(0,0,0,.3), inset 0 0 28px rgba(245,213,139,.045);
+      backdrop-filter: blur(7px);
+    }
+    .welcome-flower {
+      font-size: clamp(3rem, 14vw, 5rem);
+      margin-bottom: 12px;
+      animation: float 3.2s ease-in-out infinite;
+    }
+    .welcome-panel h1 {
+      color: var(--gold);
+      font-size: clamp(1.8rem, 7vw, 2.8rem);
+      line-height: 1.45;
+      margin: 10px 0 16px;
+    }
+    .welcome-panel button {
+      margin-top: 26px;
+      min-width: 190px;
+      font-size: 1.05rem;
+    }
+
     .page {
       position: relative;
       min-height: 100vh;
@@ -260,7 +296,17 @@
   <div class="glow two" aria-hidden="true"></div>
 
   <main class="page">
-    <section class="card" aria-labelledby="birthday-title">
+    <section class="welcome-screen" id="welcomeScreen" aria-labelledby="welcome-title">
+      <div class="welcome-panel">
+        <div class="welcome-flower" aria-hidden="true">🎁</div>
+        <p class="topline">॥ एक खास सरप्राइज ॥</p>
+        <h1 id="welcome-title">राजू पाटील यांच्यासाठी</h1>
+        <p class="subtitle">तुमच्यासाठी एक खास मराठमोळं सरप्राइज तयार आहे!</p>
+        <button id="openWishButton" type="button">🎉 शुभेच्छा पाहा</button>
+      </div>
+    </section>
+
+    <section class="card" id="birthdayCard" aria-labelledby="birthday-title" hidden>
       <p class="topline">॥ श्री गणेशाय नमः ॥</p>
       <img class="birthday-photo" src="raju-patil.jpg" alt="राजू पाटील यांचा वाढदिवसाचा फोटो" loading="eager">
       <div class="ganesh" aria-hidden="true">🌺</div>
@@ -286,9 +332,6 @@
       </p>
 
       <div class="actions">
-        <button id="musicButton" class="secondary" type="button">
-          ▶️ संगीत सुरू करा
-        </button>
         <button id="celebrateButton" class="secondary" type="button">
           🎊 पुन्हा सेलिब्रेट करूया
         </button>
@@ -296,7 +339,7 @@
 
 
       <p id="musicStatus" class="music-note" hidden>
-        संगीतासाठी: या HTML फाइलसोबत <code>music.mp3</code> अपलोड करा.
+        
       </p>
       <p id="statusMessage" class="status" aria-live="polite" hidden></p>
 
@@ -310,7 +353,6 @@
 
   <script>
     (() => {
-      const musicButton = document.getElementById('musicButton');
       const musicStatus = document.getElementById('musicStatus');
       const celebrateButton = document.getElementById('celebrateButton');
       const birthdayMusic = document.getElementById('birthdayMusic');
@@ -334,26 +376,6 @@
         }
       }
 
-      musicButton.addEventListener('click', async () => {
-        if (birthdayMusic.paused) {
-          if (musicUnavailable) {
-            musicStatus.textContent = 'music.mp3 सापडली नाही. स्वतःची संगीत फाइल index.html सोबत अपलोड करा.';
-            return;
-          }
-          try {
-            await birthdayMusic.play();
-            musicButton.textContent = '⏸️ संगीत थांबवा';
-            musicStatus.textContent = '🎶 संगीत सुरू आहे!';
-          } catch (error) {
-            musicStatus.textContent = 'संगीत सुरू झाले नाही. music.mp3 फाइल त्याच फोल्डरमध्ये आहे का ते तपासा.';
-          }
-        } else {
-          birthdayMusic.pause();
-          musicButton.textContent = '▶️ संगीत सुरू करा';
-          musicStatus.textContent = 'संगीत थांबवले आहे.';
-        }
-      });
-
       birthdayMusic.addEventListener('error', () => {
         musicUnavailable = true;
         musicStatus.textContent = 'संगीत अजून जोडलेले नाही. तुमची music.mp3 फाइल index.html सोबत अपलोड करा.';
@@ -370,16 +392,40 @@
         try {
           birthdayMusic.volume = 0.8;
           await birthdayMusic.play();
-          musicButton.textContent = '⏸️ संगीत थांबवा';
           musicStatus.textContent = '🎶 संगीत सुरू आहे!';
         } catch (error) {
-          musicStatus.textContent = 'तुमच्या ब्राउझरने आपोआप संगीत सुरू होऊ दिले नाही. संगीत सुरू करण्यासाठी बटण दाबा.';
+          musicStatus.textContent = 'तुमच्या ब्राउझरने आपोआप संगीत सुरू होऊ दिले नाही.';
         }
       }
 
+      let firstInteractionTried = false;
+      async function startMusicAfterInteraction() {
+        if (firstInteractionTried || !birthdayMusic.paused) return;
+        firstInteractionTried = true;
+        try {
+          birthdayMusic.volume = 0.8;
+          await birthdayMusic.play();
+          musicStatus.textContent = '🎶 संगीत सुरू आहे!';
+        } catch (error) {
+          // The music button remains available if playback is still blocked.
+        }
+      }
+
+      // The welcome button reveals the birthday card and attempts playback
+      // directly from the visitor's tap, which is more likely to satisfy browser policies.
+      const welcomeScreen = document.getElementById('welcomeScreen');
+      const birthdayCard = document.getElementById('birthdayCard');
+      const openWishButton = document.getElementById('openWishButton');
+
+      openWishButton.addEventListener('click', async () => {
+        welcomeScreen.hidden = true;
+        birthdayCard.hidden = false;
+        celebrate(60);
+        await startMusicAfterInteraction();
+      });
+
       window.addEventListener('load', () => {
-        window.setTimeout(() => celebrate(24), 450);
-        attemptAutoplay();
+        // Keep the first screen clean; do not try audio before the visitor taps.
       });
     })();
   </script>
